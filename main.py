@@ -1,7 +1,8 @@
 import os.path
-
 import joblib
 import pandas as pd
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
@@ -12,10 +13,29 @@ from sklearn.tree import DecisionTreeClassifier
 
 from function.featureExtraction import featureExtraction
 
+
 # GLOBAL SETTINGS:
 CURRENT_FILE = __file__
 F = os.path.dirname(os.path.abspath(CURRENT_FILE))
 DATASET_URL = F + r"/data/urlset.csv"
+app = Flask(__name__)
+CORS(app)
+
+
+@app.route('/api/data', methods=['POST'])
+def get_data():
+    model_name = predicted_class = probability = ""
+    try:
+        data = request.get_json()
+        url = data['url']
+        data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
+        X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
+        model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
+    except Exception as e:
+        return jsonify({'messenger': str(e)})
+
+    data = {'messenger': predicted_class}
+    return jsonify(data)
 
 
 def preprocessing_DATA():
@@ -60,10 +80,16 @@ def predictLabel(X, url, model_):
     predicted_class_index = probabilities.argmax(axis=1)
     predicted_class_probability = probabilities.max(axis=1) * 100
 
+    # Get 3 important value:
+    model_name = model_.__name__
+    predicted_class = ('Phishing' if model.classes_[predicted_class_index][0] == 0 else 'Legitimate')
+    probability = round(predicted_class_probability[0], 2)
+
     # Print the predicted class and its probability percentage
-    print(f"Algorithm: {model_.__name__}")
-    print("Predicted class: " + ('Phishing' if model.classes_[predicted_class_index][0] == 0 else 'Legitimate'))
-    print(f"Probability: {predicted_class_probability[0]:.2f}%")
+    print(f"Algorithm: {model_name}")
+    print("Predicted class: " + predicted_class)
+    print(f"Probability: {probability}%")
+    return model_name, predicted_class, probability
 
 
 if __name__ == '__main__':
@@ -71,11 +97,10 @@ if __name__ == '__main__':
     # data = featureExtraction(data)
     # data.to_csv(F + '/data/train.csv', index=False)
 
-    url = input('Your URL: ')
-
-    data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
-    X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
-    y = data['label'].apply(lambda x: int(x))
+    # url = input('Your URL: ')
+    # data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
+    # X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
+    # y = data['label'].apply(lambda x: int(x))
     # trainModel(X, y, RandomForestClassifier)
-
-    predictLabel(X, url, RandomForestClassifier)
+    # predictLabel(X, url, RandomForestClassifier)
+    app.run(debug=True, host="127.0.0.1", port=5000)
