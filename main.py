@@ -97,10 +97,4 @@ if __name__ == '__main__':
     # data = featureExtraction(data)
     # data.to_csv(F + '/data/train.csv', index=False)
 
-    # url = input('Your URL: ')
-    # data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
-    # X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
-    # y = data['label'].apply(lambda x: int(x))
-    # trainModel(X, y, RandomForestClassifier)
-    # predictLabel(X, url, RandomForestClassifier)
     app.run(debug=True, host="127.0.0.1", port=5000)
