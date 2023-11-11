@@ -4,12 +4,12 @@ import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 from function.featureExtraction import featureExtraction
 
@@ -31,11 +31,28 @@ def get_data():
         data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
         X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
         model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
+        return jsonify({'messenger': predicted_class,
+                        "probability": str(probability) + "%"}), 200
     except Exception as e:
-        return jsonify({'messenger': str(e)})
+        return jsonify({'messenger': str(e),
+                        "probability": "Error"}), 500
 
-    data = {'messenger': predicted_class}
-    return jsonify(data)
+
+@app.route('/api/evaluatedData', methods=['POST'])
+def add_data():
+    model_name = predicted_class = probability = ""
+    try:
+        data = request.get_json()
+        url = data['url']
+        data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
+        X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
+        model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
+        predicted_class = 0 if predicted_class == 'Phishing' else 1
+        with open('./data/evaluatedData.csv', 'a') as csv_file:
+            csv_file.write(url + "," + str(predicted_class) + "\n")
+        return jsonify({'message': 'Data added to CSV successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 def preprocessing_DATA():
@@ -75,7 +92,6 @@ def predictLabel(X, url, model_):
 
     X_new = scaler.transform(X_new)
     probabilities = model.predict_proba(X_new)
-
     # Get the class with the highest probability for the new data point
     predicted_class_index = probabilities.argmax(axis=1)
     predicted_class_probability = probabilities.max(axis=1) * 100
@@ -93,8 +109,4 @@ def predictLabel(X, url, model_):
 
 
 if __name__ == '__main__':
-    # data = preprocessing_DATA()
-    # data = featureExtraction(data)
-    # data.to_csv(F + '/data/train.csv', index=False)
-
     app.run(debug=True, host="127.0.0.1", port=5000)

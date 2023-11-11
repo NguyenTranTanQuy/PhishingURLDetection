@@ -1,0 +1,67 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 420px;
+  min-height: 100px;
+  text-align: center;
+  font-family: "Roboto", sans-serif;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: #ccc;
+  padding: 12px 20px;
+  border: 8px solid #333;
+}
+
+.result {
+  padding: 8px 16px;
+  border: 2px solid #333;
+  margin-bottom: 8px;
+  width: 100%;
+  border-radius: 8px;
+}
+
+#label,
+#probability,
+#evaluate {
+  align-self: flex-start;
+  font-size: 14px;
+}
+
+#label > span,
+#probability > span {
+  display: inline-block;
+  width: 100px;
+  text-align: start;
+}
+
+#label > b,
+#probability > b {
+  text-transform: uppercase;
+}
+
+#evaluate > span {
+  display: inline-block;
+  width: 140px;
+  text-align: start;
+}
+
+#evaluate > button {
+  padding: 4px 16px;
+  border: 1px solid #333;
+  border-radius: 5px;
+}
+
+#evaluate > button:hover {
+  background-color: green;
+  color: #fff;
+}
