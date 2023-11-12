@@ -88,13 +88,13 @@ def trainModel(X, y, model_):
         model = model_()
     model.fit(X_train, y)
 
-    joblib.dump(model, F + f"/data/models/{model_.__name__}.model")
+    joblib.dump(model, F + f"/data/models/RandomForestClassifier.model")
 
 
 def predictLabel(X, url, model_):
     scaler = StandardScaler()
     scaler.fit_transform(X)
-    model = joblib.load(F + f"/data/models/{model_.__name__}.model")
+    model = joblib.load(F + f"/data/models/RandomForestClassifier.model")
 
     # Predict outcomes on new data
     df = pd.DataFrame()
@@ -109,15 +109,15 @@ def predictLabel(X, url, model_):
     predicted_class_probability = probabilities.max(axis=1) * 100
 
     # Get 3 important value:
-    model_name = model_.__name__
+    # model_name = model_.__name__
     predicted_class = ('Phishing' if model.classes_[predicted_class_index][0] == 0 else 'Legitimate')
     probability = round(predicted_class_probability[0], 2)
 
     # Print the predicted class and its probability percentage
-    print(f"Algorithm: {model_name}")
+    # print(f"Algorithm: {model_name}")
     print("Predicted class: " + predicted_class)
     print(f"Probability: {probability}%")
-    return model_name, predicted_class, probability
+    return "", predicted_class, probability
 
 
 if __name__ == '__main__':
