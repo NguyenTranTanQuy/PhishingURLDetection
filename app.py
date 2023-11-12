@@ -38,9 +38,6 @@ def get_data():
         return jsonify({'messenger': predicted_class,
                         "probability": str(probability) + "%"}), 200
     except Exception as e:
-        # Print specific error information
-        print(f"An error occurred: {str(e)}")
-
         # Optionally, print the traceback
         import traceback
         traceback.print_exc()
@@ -93,7 +90,8 @@ def trainModel(X, y, model_):
 def predictLabel(X, url, model_):
     scaler = StandardScaler()
     scaler.fit_transform(X)
-    model = joblib.load("./data/models/RandomForestClassifier.model")
+    print(F + "/data/models/RandomForestClassifier.model")
+    model = joblib.load(F + "/data/models/RandomForestClassifier.model")
 
     # Predict outcomes on new data
     df = pd.DataFrame()
