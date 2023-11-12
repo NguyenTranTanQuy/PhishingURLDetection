@@ -34,7 +34,8 @@ def get_data():
         url = data['url']
         data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
         X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
-        model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
+        y = data['label']
+        model_name, predicted_class, probability = predictLabel(X, y, url, RandomForestClassifier)
         return jsonify({'messenger': predicted_class,
                         "probability": str(probability) + "%"}), 200
     except Exception as e:
@@ -54,7 +55,8 @@ def add_data():
         url = data['url']
         data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
         X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
-        model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
+        y = data['label']
+        model_name, predicted_class, probability = predictLabel(X, y, url, RandomForestClassifier)
         predicted_class = 0 if predicted_class == 'Phishing' else 1
         with open('./data/evaluatedData.csv', 'a') as csv_file:
             csv_file.write(url + "," + str(predicted_class) + "\n")
@@ -84,14 +86,17 @@ def trainModel(X, y, model_):
         model = model_()
     model.fit(X_train, y)
 
-    joblib.dump(model, F + f"/data/models/RandomForestClassifier.model")
+    # joblib.dump(model, F + f"/data/models/RandomForestClassifier.model")
+    model.save_mode(F + f"/data/models/RandomForestClassifier.h5")
 
 
-def predictLabel(X, url, model_):
+def predictLabel(X, y, url, model_):
     scaler = StandardScaler()
-    scaler.fit_transform(X)
-    print(F + "/data/models/RandomForestClassifier.model")
-    model = joblib.load(F + "/data/models/RandomForestClassifier.model")
+    X_train = scaler.fit_transform(X)
+    # print(F + "/data/models/RandomForestClassifier.model")
+    # model = joblib.load(F + "/data/models/RandomForestClassifier.model")
+    model = RandomForestClassifier()
+    model.fit(X_train, y)
 
     # Predict outcomes on new data
     df = pd.DataFrame()
