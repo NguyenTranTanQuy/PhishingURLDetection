@@ -1,1 +1,0 @@
-columns = ["domain", "url-protocol", "subdomain-name", "domain-name", "domain-suffix", "url-path", "label"]
