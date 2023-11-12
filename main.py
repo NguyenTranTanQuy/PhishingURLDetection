@@ -111,7 +111,3 @@ def predictLabel(X, url, model_):
     print("Predicted class: " + predicted_class)
     print(f"Probability: {probability}%")
     return model_name, predicted_class, probability
-
-
-if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5000)
