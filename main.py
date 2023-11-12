@@ -1,8 +1,8 @@
 import os.path
 import joblib
 import pandas as pd
-from flask import Flask, jsonify, request, render_template
-from flask_cors import CORS
+# from flask import Flask, jsonify, request, render_template
+# from flask_cors import CORS
 
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
@@ -18,46 +18,46 @@ from function.featureExtraction import featureExtraction
 CURRENT_FILE = __file__
 F = os.path.dirname(os.path.abspath(CURRENT_FILE))
 DATASET_URL = F + r"/data/urlset.csv"
-app = Flask(__name__)
-CORS(app)
+# app = Flask(__name__)
+# CORS(app)
 
 
-@app.route('/')
-def home():
-    return render_template('home.html')
-
-
-@app.route('/api/data', methods=['POST'])
-def get_data():
-    model_name = predicted_class = probability = ""
-    try:
-        data = request.get_json()
-        url = data['url']
-        data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
-        X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
-        model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
-        return jsonify({'messenger': predicted_class,
-                        "probability": str(probability) + "%"}), 200
-    except Exception as e:
-        return jsonify({'messenger': str(e),
-                        "probability": "Error"}), 500
-
-
-@app.route('/api/evaluatedData', methods=['POST'])
-def add_data():
-    model_name = predicted_class = probability = ""
-    try:
-        data = request.get_json()
-        url = data['url']
-        data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
-        X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
-        model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
-        predicted_class = 0 if predicted_class == 'Phishing' else 1
-        with open('./data/evaluatedData.csv', 'a') as csv_file:
-            csv_file.write(url + "," + str(predicted_class) + "\n")
-        return jsonify({'message': 'Data added to CSV successfully'}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+# @app.route('/')
+# def home():
+#     return render_template('home.html')
+#
+#
+# @app.route('/api/data', methods=['POST'])
+# def get_data():
+#     model_name = predicted_class = probability = ""
+#     try:
+#         data = request.get_json()
+#         url = data['url']
+#         data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
+#         X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
+#         model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
+#         return jsonify({'messenger': predicted_class,
+#                         "probability": str(probability) + "%"}), 200
+#     except Exception as e:
+#         return jsonify({'messenger': str(e),
+#                         "probability": "Error"}), 500
+#
+#
+# @app.route('/api/evaluatedData', methods=['POST'])
+# def add_data():
+#     model_name = predicted_class = probability = ""
+#     try:
+#         data = request.get_json()
+#         url = data['url']
+#         data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
+#         X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
+#         model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
+#         predicted_class = 0 if predicted_class == 'Phishing' else 1
+#         with open('./data/evaluatedData.csv', 'a') as csv_file:
+#             csv_file.write(url + "," + str(predicted_class) + "\n")
+#         return jsonify({'message': 'Data added to CSV successfully'}), 200
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
 
 
 def preprocessing_DATA():
