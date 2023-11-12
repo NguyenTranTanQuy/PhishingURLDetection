@@ -10,7 +10,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-
 from function.featureExtraction import featureExtraction
 
 
@@ -94,7 +93,7 @@ def trainModel(X, y, model_):
 def predictLabel(X, url, model_):
     scaler = StandardScaler()
     scaler.fit_transform(X)
-    model = joblib.load(F + f"/data/models/RandomForestClassifier.model")
+    model = joblib.load("./data/models/RandomForestClassifier.model")
 
     # Predict outcomes on new data
     df = pd.DataFrame()
