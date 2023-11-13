@@ -7,7 +7,7 @@ getCurrentURL(function (url_) {
   const evaluation = document.getElementById("evaluate");
   noButton.addEventListener("click", function () {
     // Make a POST request to the server
-    fetch("http://127.0.0.1:5000/api/evaluatedData", {
+    fetch("http://localhost:5000/api/evaluatedData", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

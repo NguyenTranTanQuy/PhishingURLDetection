@@ -43,6 +43,6 @@ IV.	Dự đoán nhãn của một URL bất kỳ từ mô hình đã Train:
 -	Fit các cột dữ liệu theo phạm vi của số liệu trong tập dữ liệu train
 -	Dự đoán nhãn cho URL này
 V.	Kết quả:
--	Nếu là Phishing (Nhãn 0): Lừa đảo
--	Nếu là Legitimate (Nhãn 1): Hợp pháp
+-	Nếu là Phishing (Nhãn 1): Lừa đảo
+-	Nếu là Legitimate (Nhãn 0): Hợp pháp
 - --> Kết quả: hiện thị tên mô hình học máy (Algorithm), nhãn dự đoán (Predicted class), và xác xuất (Probability) của nhãn này

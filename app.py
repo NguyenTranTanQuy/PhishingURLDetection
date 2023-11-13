@@ -1,15 +1,13 @@
 import os.path
 import joblib
 import pandas as pd
-from flask import Flask, jsonify, request, render_template
-from flask_cors import CORS
-
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+from flask import Flask, jsonify, request, render_template
+from flask_cors import CORS
+
 from function.featureExtraction import featureExtraction
 
 
@@ -33,16 +31,11 @@ def get_data():
         data = request.get_json()
         url = data['url']
         data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
-        X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
-        y = data['label']
-        model_name, predicted_class, probability = predictLabel(X, y, url, RandomForestClassifier)
+        X = data.drop(columns=['domain', 'label', 'registered_domain', 'https'], axis=1)
+        model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
         return jsonify({'messenger': predicted_class,
                         "probability": str(probability) + "%"}), 200
     except Exception as e:
-        # Optionally, print the traceback
-        import traceback
-        traceback.print_exc()
-
         return jsonify({'messenger': str(e),
                         "probability": "Error"}), 500
 
@@ -54,9 +47,8 @@ def add_data():
         data = request.get_json()
         url = data['url']
         data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
-        X = data.drop(columns=['domain', 'label', 'registered_domain'], axis=1)
-        y = data['label']
-        model_name, predicted_class, probability = predictLabel(X, y, url, RandomForestClassifier)
+        X = data.drop(columns=['domain', 'label', 'registered_domain', 'https'], axis=1)
+        model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
         predicted_class = 0 if predicted_class == 'Phishing' else 1
         with open('./data/evaluatedData.csv', 'a') as csv_file:
             csv_file.write(url + "," + str(predicted_class) + "\n")
@@ -85,24 +77,19 @@ def trainModel(X, y, model_):
     else:
         model = model_()
     model.fit(X_train, y)
-
-    # joblib.dump(model, F + f"/data/models/RandomForestClassifier.model")
-    model.save_mode(F + f"/data/models/RandomForestClassifier.h5")
+    joblib.dump(model, F + f"/data/models/{model_.__name__}.model")
 
 
-def predictLabel(X, y, url, model_):
+def predictLabel(X, url, model_):
     scaler = StandardScaler()
-    X_train = scaler.fit_transform(X)
-    # print(F + "/data/models/RandomForestClassifier.model")
-    # model = joblib.load(F + "/data/models/RandomForestClassifier.model")
-    model = RandomForestClassifier()
-    model.fit(X_train, y)
+    scaler.fit(X)
+    model = joblib.load(F + f"/data/models/{model_.__name__}.model")
 
     # Predict outcomes on new data
     df = pd.DataFrame()
     df['domain'] = pd.Series(url)
     X_new = featureExtraction(df)
-    X_new = X_new.drop(columns=['domain', 'registered_domain'], axis=1)
+    X_new = X_new.drop(columns=['domain', 'registered_domain', 'https'], axis=1)
 
     X_new = scaler.transform(X_new)
     probabilities = model.predict_proba(X_new)
@@ -111,16 +98,16 @@ def predictLabel(X, y, url, model_):
     predicted_class_probability = probabilities.max(axis=1) * 100
 
     # Get 3 important value:
-    # model_name = model_.__name__
-    predicted_class = ('Phishing' if model.classes_[predicted_class_index][0] == 0 else 'Legitimate')
+    model_name = model_.__name__
+    predicted_class = ('Phishing' if model.classes_[predicted_class_index][0] == 1 else 'Legitimate')
     probability = round(predicted_class_probability[0], 2)
 
     # Print the predicted class and its probability percentage
-    # print(f"Algorithm: {model_name}")
+    print(f"Algorithm: {model_name}")
     print("Predicted class: " + predicted_class)
     print(f"Probability: {probability}%")
-    return "", predicted_class, probability
+    return model_name, predicted_class, probability
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
