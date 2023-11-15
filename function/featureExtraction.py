@@ -1,6 +1,4 @@
 import re
-
-from sklearn.preprocessing import MinMaxScaler
 from tld import get_tld
 from urllib.parse import urlparse
 
@@ -85,7 +83,3 @@ def featureExtraction(data):
     data['shortening_service'] = data['domain'].apply(lambda x: shortening_service(x))
     data['having_ip_address'] = data['domain'].apply(lambda x: having_ip_address(x))
     return data
-
-
-
-
