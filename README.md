@@ -1,4 +1,4 @@
-# Phishing URL Detection Extension: Detect whether a URL is Phishing or Legitimate
+# Phishing URL Detection Extension:Detect whether a URL is Phishing or Legitimate
 ### PROCESS OF PROJECT IMPLEMENTATION STEPS
 
 #### I. Cleaning and removing redundant columns of Datasets:

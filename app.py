@@ -5,8 +5,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from flask import Flask, jsonify, request, render_template
-from flask_cors import CORS
 
 from function.featureExtraction import featureExtraction
 
@@ -14,56 +12,15 @@ from function.featureExtraction import featureExtraction
 # GLOBAL SETTINGS:
 CURRENT_FILE = __file__
 F = os.path.dirname(os.path.abspath(CURRENT_FILE))
-DATASET_URL = F + r"/data/urlset.csv"
-app = Flask(__name__)
-CORS(app)
-
-
-@app.route('/')
-def home():
-    return render_template('home.html')
-
-
-@app.route('/api/data', methods=['POST'])
-def get_data():
-    model_name = predicted_class = probability = ""
-    try:
-        data = request.get_json()
-        url = data['url']
-        data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
-        X = data.drop(columns=['domain', 'label', 'registered_domain', 'https'], axis=1)
-        model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
-        return jsonify({'messenger': predicted_class,
-                        "probability": str(probability) + "%"}), 200
-    except Exception as e:
-        return jsonify({'messenger': str(e),
-                        "probability": "Error"}), 500
-
-
-@app.route('/api/evaluatedData', methods=['POST'])
-def add_data():
-    model_name = predicted_class = probability = ""
-    try:
-        data = request.get_json()
-        url = data['url']
-        data = pd.read_csv(F + '/data/train.csv', sep=",", encoding="utf-8", index_col=False)
-        X = data.drop(columns=['domain', 'label', 'registered_domain', 'https'], axis=1)
-        model_name, predicted_class, probability = predictLabel(X, url, RandomForestClassifier)
-        predicted_class = 0 if predicted_class == 'Phishing' else 1
-        with open('./data/evaluatedData.csv', 'a') as csv_file:
-            csv_file.write(url + "," + str(predicted_class) + "\n")
-        return jsonify({'message': 'Data added to CSV successfully'}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+DATASET_URL = F + r"/data/train.csv"
 
 
 def preprocessing_DATA():
-    data = pd.read_csv(DATASET_URL, sep=";", encoding="latin1")
+    data = pd.read_csv(DATASET_URL, sep=",", encoding="utf-8")
     no_label_index = list(
         data.loc[(data['label'] != '1') & (data['label'] != 0) & (data['label'] != '0') & (data['label'] != 1)].index)
     data = data.drop(index=no_label_index)
-    data = data.drop(columns=['ranking', 'mld_res', 'mld.ps_res', 'card_rem', 'ratio_Rrem', 'ratio_Arem',
-                              'jaccard_RR', 'jaccard_RA', 'jaccard_AR', 'jaccard_AA', 'jaccard_ARrd', 'jaccard_ARrem'], axis=1)
+    data = data.drop(columns=["url", "code", "scheme", "domain", "subdomain", "second_domain", "tld", "url_path", "words_raw"], axis=1)
     data = data.reset_index(drop=True)
     return data
 
@@ -77,13 +34,13 @@ def trainModel(X, y, model_):
     else:
         model = model_()
     model.fit(X_train, y)
-    joblib.dump(model, F + f"/data/models/{model_.__name__}.model")
+    joblib.dump(model, F + f"/data/models/{model_.__name__}.joblib")
 
 
 def predictLabel(X, url, model_):
     scaler = StandardScaler()
     scaler.fit(X)
-    model = joblib.load(F + f"/data/models/{model_.__name__}.model")
+    model = joblib.load(F + f"/data/models/{model_.__name__}.joblib")
 
     # Predict outcomes on new data
     df = pd.DataFrame()
@@ -110,4 +67,12 @@ def predictLabel(X, url, model_):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    data = preprocessing_DATA()
+
+    X = data.drop(columns=['label'], axis=1)
+    y = data['label'].apply(lambda x: int(x))
+
+    trainModel(X, y, RandomForestClassifier)
+
+
+
