@@ -1,7 +1,12 @@
 # Phishing URL Detection Extension:Detect whether a URL is Phishing or Legitimate
-### PROCESS OF PROJECT IMPLEMENTATION STEPS
 
-#### I. Cleaning and removing redundant columns of Datasets:
+``SOURCES``
+- Get data from the website: [https://www.phishtank.com](https://www.phishtank.com/phish_archive.php)
+- Datasets: [1M - PD (Over one million rows)](https://drive.google.com/drive/folders/1_EEDhqXqZ-5tS13-Kle_ytADgSjYqOKO?usp=sharing)
+
+``PROCESS OF PROJECT IMPLEMENTATION STEPS``
+
+I. Cleaning and removing redundant columns of Datasets:
 -	Read a CSV file including datasets
 -	Remove all columns that don't have labels 0 or 1
 -   Remove columns that we don't use (included about 12 columns)
